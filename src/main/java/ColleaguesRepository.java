@@ -10,10 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.lang.Integer.parseInt;
 
 public class ColleaguesRepository {
 
@@ -53,8 +52,9 @@ public class ColleaguesRepository {
     public void sortColleagues() {
         List<Colleagues> collectColleagues = colleaguesList.stream()
                 //   .filter(colleagues -> colleagues.getFirsName().startsWith("U"))
-                .filter(colleagues -> parseInt(colleagues.dateOfBirth.substring(3,5)) ==2)
-                .sorted()
+              //  .filter(colleagues -> parseInt(colleagues.dateOfBirth.substring(3,5)) == 2)
+                .filter(colleagues -> colleagues.dateOfBirth.substring(3,5).equals("10"))
+                .sorted(Comparator.comparing(Colleagues::getFirsName))
                 .collect(Collectors.toList());
         System.out.println(collectColleagues);
     }
