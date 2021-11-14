@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Integer.parseInt;
+
 public class ColleaguesRepository {
 
 
@@ -51,8 +53,8 @@ public class ColleaguesRepository {
     public void sortColleagues() {
         List<Colleagues> collectColleagues = colleaguesList.stream()
                 //   .filter(colleagues -> colleagues.getFirsName().startsWith("U"))
-                .filter(colleagues -> colleagues.getDateOfBirth())
-
+                .filter(colleagues -> parseInt(colleagues.dateOfBirth.substring(3,5)) ==2)
+                .sorted()
                 .collect(Collectors.toList());
         System.out.println(collectColleagues);
     }
