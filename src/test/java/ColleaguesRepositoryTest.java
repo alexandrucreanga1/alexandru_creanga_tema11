@@ -1,8 +1,7 @@
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ColleaguesRepositoryTest extends TestCase {
+public class ColleaguesRepositoryTest {
 
     //object under Test>>>>
     ColleaguesRepository colleaguesRepository = new ColleaguesRepository();
