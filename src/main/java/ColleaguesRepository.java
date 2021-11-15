@@ -14,6 +14,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Integer.parseInt;
+
 public class ColleaguesRepository {
 
 
@@ -21,8 +23,8 @@ public class ColleaguesRepository {
     List<Colleagues> groupedByMonthList = new ArrayList<>();
 
 
-    public void readColleaguesFromCSV() {
-        Path fileIn = new File("resources/colleaguesIN.csv").toPath();
+    public void readFilterSortWriteFromCSV(String inputFileNameCSV,int monthNumber, String outputFileName) throws IOException {
+        Path fileIn = new File("resources/"+inputFileNameCSV+".csv").toPath();
         System.out.println(fileIn.toAbsolutePath());
         try (BufferedReader reader = Files.newBufferedReader(fileIn)) {
             String line = null;
@@ -34,6 +36,9 @@ public class ColleaguesRepository {
             System.out.println("IOException: " + x);
         }
         System.out.println(colleaguesList.size() + " colleagues.");
+
+        sortColleagues(monthNumber, outputFileName);
+
     }
 
     public Colleagues getColleaguesFromCsvLine(String line) {
@@ -41,6 +46,16 @@ public class ColleaguesRepository {
         if (tokens.length != 3) {
             throw new IllegalArgumentException();
         }
+
+        if(parseInt(tokens[2].trim().substring(0,2)) > 31) {
+            throw new IllegalArgumentException("Please take into consideration that month cannot have more than 31 days");
+        }
+
+        if(parseInt(tokens[2].trim().substring(0,2)) < 1) {
+            throw new IllegalArgumentException("Please take into consideration that month cannot have 0 days or negative");
+        }
+
+
         String firstName = tokens[0].trim();
         String lastName = tokens[1].trim();
         String dateOfBirth = tokens[2].trim();
@@ -49,18 +64,23 @@ public class ColleaguesRepository {
     }
 
 
-    public void sortColleagues() {
-        List<Colleagues> collectColleagues = colleaguesList.stream()
-                //   .filter(colleagues -> colleagues.getFirsName().startsWith("U"))
-              //  .filter(colleagues -> parseInt(colleagues.dateOfBirth.substring(3,5)) == 2)
-                .filter(colleagues -> colleagues.dateOfBirth.substring(3,5).equals("10"))
+    private void sortColleagues(int monthNumber, String outputFileName) throws IOException {
+        if((monthNumber < 1) || (monthNumber > 12)) {
+            throw new IllegalArgumentException("Month Number have to be not greater than 12 or lower than 1!");
+        }
+
+        groupedByMonthList = colleaguesList.stream()
+                .filter(colleagues -> parseInt(colleagues.dateOfBirth.substring(3,5)) == monthNumber)
+              //  .filter(colleagues -> colleagues.dateOfBirth.substring(3,5).equals(monthNumber))
                 .sorted(Comparator.comparing(Colleagues::getFirsName))
                 .collect(Collectors.toList());
-        System.out.println(collectColleagues);
+
+        writeColleaguesToExcelFile(outputFileName);
+        System.out.println(groupedByMonthList);
     }
 
 
-    public void writeColleaguesToExcelFile() throws IOException {
+    private void writeColleaguesToExcelFile( String outputFileName) throws IOException {
 
         //Create Workbook
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -68,20 +88,18 @@ public class ColleaguesRepository {
         // spreadsheet object
         XSSFSheet spreadsheet = workbook.createSheet("Colleagues");
         int rownum = 0;
-        for (Colleagues colleagues : colleaguesList) {
+        for (Colleagues colleagues : groupedByMonthList) {
             Row row = spreadsheet.createRow(rownum++);
             int columnCount = 0;
             Cell cell = row.createCell(columnCount++);
             cell.setCellValue(colleagues.getFirsName());
             cell = row.createCell(columnCount++);
             cell.setCellValue(colleagues.getLastName());
-            cell = row.createCell(columnCount++);
-            cell.setCellValue(colleagues.getDateOfBirth());
 
 
         }
 
-        FileOutputStream out = new FileOutputStream("resources/colleaguesOUT.xlsx");
+        FileOutputStream out = new FileOutputStream("resources/"+outputFileName+".xlsx");
         workbook.write(out);
         out.close();
 
